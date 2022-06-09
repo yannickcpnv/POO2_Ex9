@@ -11,7 +11,7 @@ internal static class Program
 
         var smtpSever = new SmtpServer(3325);
         smtpSever.Start();
-        smtpSever.WaitForReceivingMessage();
+        smtpSever.WaitReceivingMessage();
 
         exitEvent.WaitOne();
         smtpSever.Stop();

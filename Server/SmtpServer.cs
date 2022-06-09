@@ -30,41 +30,35 @@ public class SmtpServer
 
     public void Stop()
     {
-        _server!.Stop();
+        _server?.Stop();
     }
 
-    public void WaitForReceivingMessage()
+    public void WaitReceivingMessage()
     {
-        const string storeLocation = "data";
-        const string statsFilename = "data/stats.txt";
-
         _server!.MessageReceived += (_, args) =>
         {
             SmtpMessage mail = args.Message;
 
-            Console.WriteLine($"Received mail: {mail.FromAddress} {mail.ToAddresses[0]}");
-            _receivedCount++;
+            Receive(mail);
 
-            if (HasBadWords(mail) || HasInvalidRecipient(mail))
-            {
-                Console.WriteLine($"Rejected mail: {mail.FromAddress} {mail.ToAddresses[0]}");
-                _rejectedCount++;
-            }
+            if (IsInvalid(mail))
+                Reject(mail);
             else
-            {
-                Console.WriteLine($"Stored mail  : {mail.FromAddress} {mail.ToAddresses[0]}");
+                Store(mail);
 
-                foreach (EmailAddress address in mail.ToAddresses)
-                {
-                    string fileName = Path.Combine(storeLocation, address.Address, $"{DateTime.Now.Ticks}.eml");
-                    var file = new FileInfo(fileName);
-                    file.Directory!.Create();
-                    File.WriteAllText(file.FullName, mail.Data);
-                }
-            }
-
-            WriteInFile(statsFilename);
+            WriteInFile();
         };
+    }
+
+    private void Receive(SmtpMessage mail)
+    {
+        Console.WriteLine($"Received mail: {mail.FromAddress} {mail.ToAddresses[0]}");
+        _receivedCount++;
+    }
+
+    private static bool IsInvalid(SmtpMessage mail)
+    {
+        return HasBadWords(mail) || !HasInvalidRecipient(mail);
     }
 
     private static bool HasBadWords(SmtpMessage mail)
@@ -77,9 +71,28 @@ public class SmtpServer
         return !mail.ToAddresses.Any(address => _whiteRegex!.IsMatch(address.Address));
     }
 
-    private void WriteInFile(string statsFilename)
+    private static void Store(SmtpMessage mail)
     {
-        using var file = new StreamWriter(statsFilename);
+        Console.WriteLine($"Stored mail  : {mail.FromAddress} {mail.ToAddresses[0]}");
+
+        foreach (EmailAddress address in mail.ToAddresses)
+        {
+            string fileName = Path.Combine("data", address.Address, $"{DateTime.Now.Ticks}.eml");
+            var file = new FileInfo(fileName);
+            file.Directory!.Create();
+            File.WriteAllText(file.FullName, mail.Data);
+        }
+    }
+
+    private void Reject(SmtpMessage mail)
+    {
+        Console.WriteLine($"Rejected mail: {mail.FromAddress} {mail.ToAddresses[0]}");
+        _rejectedCount++;
+    }
+
+    private void WriteInFile()
+    {
+        using var file = new StreamWriter("data/stats.txt");
         file.WriteLine($"Received count: {_receivedCount}");
         file.WriteLine($"Rejected count: {_rejectedCount}");
         file.WriteLine($"Spam ratio: {_rejectedCount * 100 / _receivedCount}%");
