@@ -5,12 +5,12 @@ namespace POO2_Ex9.Server;
 
 public class SmtpServer
 {
-    private static Regex? _whiteRegex;
-    private static Regex? _badWordsRegex;
+    private readonly Regex? _badWordsRegex;
     private readonly int _port;
+    private readonly Regex? _whiteRegex;
+
     private int _receivedCount;
     private int _rejectedCount;
-
     private SimpleSmtpServer? _server;
 
     public SmtpServer(int port)
@@ -56,17 +56,17 @@ public class SmtpServer
         _receivedCount++;
     }
 
-    private static bool IsInvalid(SmtpMessage mail)
+    private bool IsInvalid(SmtpMessage mail)
     {
-        return HasBadWords(mail) || !HasInvalidRecipient(mail);
+        return HasBadWords(mail) || HasInvalidRecipient(mail);
     }
 
-    private static bool HasBadWords(SmtpMessage mail)
+    private bool HasBadWords(SmtpMessage mail)
     {
         return mail.MessageParts.Any(part => _badWordsRegex!.IsMatch(part.BodyData));
     }
 
-    private static bool HasInvalidRecipient(SmtpMessage mail)
+    private bool HasInvalidRecipient(SmtpMessage mail)
     {
         return !mail.ToAddresses.Any(address => _whiteRegex!.IsMatch(address.Address));
     }
@@ -79,7 +79,7 @@ public class SmtpServer
         {
             string fileName = Path.Combine("data", address.Address, $"{DateTime.Now.Ticks}.eml");
             var file = new FileInfo(fileName);
-            file.Directory!.Create();
+            file.Directory?.Create();
             File.WriteAllText(file.FullName, mail.Data);
         }
     }

@@ -11,4 +11,11 @@
         <PackageReference Include="netDumbster" Version="3.0.0"/>
     </ItemGroup>
 
+    <ItemGroup>
+        <None Remove="bad_words_list.txt"/>
+        <Content Include="bad_words_list.txt">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </Content>
+    </ItemGroup>
+
 </Project>
