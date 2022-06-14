@@ -1,13 +1,13 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Net.Mail;
 using netDumbster.smtp;
+using POO2_Ex9.Validation;
 
 namespace POO2_Ex9.Server;
 
 public class SmtpServer
 {
-    private readonly Regex? _badWordsRegex;
+    private readonly MailValidator _mailValidator;
     private readonly int _port;
-    private readonly Regex? _whiteRegex;
 
     private int _receivedCount;
     private int _rejectedCount;
@@ -18,9 +18,7 @@ public class SmtpServer
         _port = port;
         _receivedCount = 0;
         _rejectedCount = 0;
-
-        _whiteRegex = new Regex("@(cpnv.ch|vd.ch)$");
-        _badWordsRegex = new Regex(string.Join("|", File.ReadLines("bad_words_list.txt")));
+        _mailValidator = new MailValidator();
     }
 
     public void Start()
@@ -37,56 +35,42 @@ public class SmtpServer
     {
         _server!.MessageReceived += (_, args) =>
         {
-            SmtpMessage mail = args.Message;
+            string rawMessage = args.Message.Data.TrimEnd('\r', '\n');
+            MailMessage mailMessage = MailMessageMimeParser.ParseMessage(rawMessage);
 
-            Receive(mail);
+            Receive(mailMessage);
 
-            if (IsInvalid(mail))
-                Reject(mail);
+            if (_mailValidator.IsValid(mailMessage))
+                Store(mailMessage);
             else
-                Store(mail);
+                Reject(mailMessage);
 
             WriteInFile();
         };
     }
 
-    private void Receive(SmtpMessage mail)
+    private void Receive(MailMessage mail)
     {
-        Console.WriteLine($"Received mail: {mail.FromAddress} {mail.ToAddresses[0]}");
+        Console.WriteLine($"Received mail: {mail.From} {mail.To[0]}");
         _receivedCount++;
     }
 
-    private bool IsInvalid(SmtpMessage mail)
+    private static void Store(MailMessage mail)
     {
-        return HasBadWords(mail) || HasInvalidRecipient(mail);
-    }
+        Console.WriteLine($"Stored mail  : {mail.From} {mail.To[0]}");
 
-    private bool HasBadWords(SmtpMessage mail)
-    {
-        return mail.MessageParts.Any(part => _badWordsRegex!.IsMatch(part.BodyData));
-    }
-
-    private bool HasInvalidRecipient(SmtpMessage mail)
-    {
-        return !mail.ToAddresses.Any(address => _whiteRegex!.IsMatch(address.Address));
-    }
-
-    private static void Store(SmtpMessage mail)
-    {
-        Console.WriteLine($"Stored mail  : {mail.FromAddress} {mail.ToAddresses[0]}");
-
-        foreach (EmailAddress address in mail.ToAddresses)
+        foreach (MailAddress address in mail.To)
         {
             string fileName = Path.Combine("data", address.Address, $"{DateTime.Now.Ticks}.eml");
             var file = new FileInfo(fileName);
             file.Directory?.Create();
-            File.WriteAllText(file.FullName, mail.Data);
+            File.WriteAllText(file.FullName, mail.Body);
         }
     }
 
-    private void Reject(SmtpMessage mail)
+    private void Reject(MailMessage mail)
     {
-        Console.WriteLine($"Rejected mail: {mail.FromAddress} {mail.ToAddresses[0]}");
+        Console.WriteLine($"Rejected mail: {mail.From} {mail.To[0]}");
         _rejectedCount++;
     }
 

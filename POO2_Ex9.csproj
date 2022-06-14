@@ -8,14 +8,18 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="netDumbster" Version="3.0.0"/>
+        <PackageReference Include="netDumbster" Version="3.0.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <None Remove="bad_words_list.txt"/>
+        <None Remove="bad_words_list.txt" />
         <Content Include="bad_words_list.txt">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>
         </Content>
+    </ItemGroup>
+
+    <ItemGroup>
+      <Compile Remove="Mail\MailValidator.cs" />
     </ItemGroup>
 
 </Project>
