@@ -14,6 +14,7 @@ internal static class Program
         smtpSever.WaitReceivingMessages();
 
         exitEvent.WaitOne();
+
         smtpSever.Stop();
     }
 
