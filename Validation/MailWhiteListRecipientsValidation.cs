@@ -9,6 +9,16 @@ public class MailWhiteListRecipientsValidation : IValidation
 
     public bool IsValid(MailMessage mail)
     {
-        return mail.To.All(address => _whiteRegex.IsMatch(address.Address));
+        return AreInWhiteList(mail.To);
+    }
+
+    private bool AreInWhiteList(MailAddressCollection addresses)
+    {
+        return addresses.All(address => IsInWhiteList(address.Address));
+    }
+
+    private bool IsInWhiteList(string address)
+    {
+        return _whiteRegex.IsMatch(address);
     }
 }

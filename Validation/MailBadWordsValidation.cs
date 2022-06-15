@@ -9,6 +9,11 @@ public class MailBadWordsValidation : IValidation
 
     public bool IsValid(MailMessage mail)
     {
-        return !_badWordsRegex.IsMatch(mail.Body);
+        return !HasBadWords(mail.Body);
+    }
+
+    private bool HasBadWords(string body)
+    {
+        return _badWordsRegex.IsMatch(body);
     }
 }
