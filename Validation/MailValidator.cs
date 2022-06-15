@@ -11,7 +11,8 @@ public class MailValidator
         _validations = new List<IValidation>
         {
             new MailBadWordsValidation(),
-            new MailRecipientValidation()
+            new MailWhiteListRecipientsValidation(),
+            new MailAttachmentsExtensionValidation()
         };
     }
 
