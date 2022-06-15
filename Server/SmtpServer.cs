@@ -31,7 +31,7 @@ public class SmtpServer
         _server?.Stop();
     }
 
-    public void WaitReceivingMessage()
+    public void WaitReceivingMessages()
     {
         _server!.MessageReceived += (_, args) =>
         {
