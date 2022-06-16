@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace POO2_Ex9.Validation;
 
-public class MailAttachmentsExtensionMailValidator : IMailValidator
+public class AttachmentsExtensionValidator : IMailValidator
 {
     private readonly Regex _badExtensions = new(@"^(zip)$");
 

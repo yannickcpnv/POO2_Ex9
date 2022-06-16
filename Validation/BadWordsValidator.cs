@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace POO2_Ex9.Validation;
 
-public class MailBadWordsMailValidator : IMailValidator
+public class BadWordsValidator : IMailValidator
 {
     private readonly Regex _badWordsRegex = new(string.Join("|", File.ReadLines("bad_words_list.txt")));
 

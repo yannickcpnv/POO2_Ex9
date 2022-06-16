@@ -5,10 +5,17 @@ namespace POO2_Ex9.Observers;
 
 public class MailStatObserver : IMailObserver
 {
+    private readonly string _fileName;
+
     private int _receivedCount;
     private int _rejectedBytes;
     private int _rejectedCount;
     private int _storedBytes;
+
+    public MailStatObserver(string fileName)
+    {
+        _fileName = fileName;
+    }
 
     public void OnReceive(MailMessage mail)
     {
@@ -32,7 +39,7 @@ public class MailStatObserver : IMailObserver
 
     private void WriteStatsInFile()
     {
-        using var file = new StreamWriter("data/stats.txt");
+        using var file = new StreamWriter(_fileName);
         file.WriteLine($"Received count  : {_receivedCount}");
         file.WriteLine($"Rejected count  : {_rejectedCount}");
         file.WriteLine($"Stored bytes    : {_storedBytes}");
