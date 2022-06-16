@@ -2,7 +2,7 @@
 
 namespace POO2_Ex9.Validation;
 
-public interface IValidation
+public interface IMailValidator
 {
     public bool IsValid(MailMessage mail);
 }

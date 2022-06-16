@@ -13,10 +13,10 @@ public class SmtpServer
 
     private SimpleSmtpServer? _server;
 
-    public SmtpServer(int port)
+    public SmtpServer(int port, MailValidator mailValidator)
     {
         _port = port;
-        _mailValidator = new MailValidator();
+        _mailValidator = mailValidator;
         _mailObservers = new List<IMailObserver>();
     }
 

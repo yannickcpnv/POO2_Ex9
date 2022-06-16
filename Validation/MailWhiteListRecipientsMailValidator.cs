@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace POO2_Ex9.Validation;
 
-public class MailWhiteListRecipientsValidation : IValidation
+public class MailWhiteListRecipientsMailValidator : IMailValidator
 {
     private readonly Regex _whiteRegex = new("@(cpnv.ch|vd.ch)$");
 

@@ -2,17 +2,17 @@
 
 namespace POO2_Ex9.Validation;
 
-public class MailValidator
+public class MailValidator : IMailValidator
 {
-    private readonly List<IValidation> _validations;
+    private readonly List<IMailValidator> _validations;
 
     public MailValidator()
     {
-        _validations = new List<IValidation>
+        _validations = new List<IMailValidator>
         {
-            new MailBadWordsValidation(),
-            new MailWhiteListRecipientsValidation(),
-            new MailAttachmentsExtensionValidation()
+            new MailBadWordsMailValidator(),
+            new MailWhiteListRecipientsMailValidator(),
+            new MailAttachmentsExtensionMailValidator()
         };
     }
 
