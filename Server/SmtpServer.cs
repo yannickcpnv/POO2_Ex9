@@ -1,12 +1,14 @@
 ﻿using System.Net.Mail;
 using netDumbster.smtp;
 using POO2_Ex9.Observers;
+using POO2_Ex9.Validation;
 
 namespace POO2_Ex9.Server;
 
-public class SmtpServer : IObservable<MailMessage>
+public class SmtpServer
 {
-    private readonly List<IObserver<MailMessage>> _observers;
+    private readonly List<IMailObserver> _mailObservers;
+    private readonly MailValidator _mailValidator;
     private readonly int _port;
 
     private SimpleSmtpServer? _server;
@@ -14,15 +16,14 @@ public class SmtpServer : IObservable<MailMessage>
     public SmtpServer(int port)
     {
         _port = port;
-        _observers = new List<IObserver<MailMessage>>();
+        _mailValidator = new MailValidator();
+        _mailObservers = new List<IMailObserver>();
     }
 
-    public IDisposable Subscribe(IObserver<MailMessage> observer)
+    public void Subscribe(IMailObserver observer)
     {
-        if (!_observers.Contains(observer))
-            _observers.Add(observer);
-
-        return new MailUnsubscriber(_observers, observer);
+        if (!_mailObservers.Contains(observer))
+            _mailObservers.Add(observer);
     }
 
     public void Start()
@@ -40,9 +41,39 @@ public class SmtpServer : IObservable<MailMessage>
         _server!.MessageReceived += (_, args) =>
         {
             string rawMessage = args.Message.Data.TrimEnd('\r', '\n');
-            MailMessage mailMessage = MailMessageMimeParser.ParseMessage(rawMessage);
-            foreach (IObserver<MailMessage> observer in _observers)
-                observer.OnNext(mailMessage);
+            MailMessage mail = MailMessageMimeParser.ParseMessage(rawMessage);
+
+            Receive(mail);
+
+            if (_mailValidator.IsValid(mail))
+                Store(mail);
+            else
+                Reject(mail);
         };
+    }
+
+    private void Receive(MailMessage mail)
+    {
+        _mailObservers.ForEach(o => o.OnReceive(mail));
+    }
+
+    private void Store(MailMessage mail)
+    {
+        _mailObservers.ForEach(o => o.OnStore(mail));
+
+        mail.To.ToList().ForEach(a => WriteBodyInFile(mail, a));
+    }
+
+    private void Reject(MailMessage mail)
+    {
+        _mailObservers.ForEach(o => o.OnReject(mail));
+    }
+
+    private static void WriteBodyInFile(MailMessage mail, MailAddress address)
+    {
+        string fileName = Path.Combine("data", address.Address, $"{DateTime.Now.Ticks}.eml");
+        var file = new FileInfo(fileName);
+        file.Directory?.Create();
+        File.WriteAllText(file.FullName, mail.Body);
     }
 }

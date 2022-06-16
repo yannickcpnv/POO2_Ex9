@@ -11,8 +11,8 @@ internal static class Program
         WaitForExitInput(exitEvent);
 
         var smtpSever = new SmtpServer(3325);
-        IDisposable subscription = smtpSever.Subscribe(new MailObserver());
-        subscription.Dispose();
+        smtpSever.Subscribe(new MailStatObserver());
+        smtpSever.Subscribe(new MailLogObserver());
         smtpSever.Start();
         smtpSever.WaitReceivingMessages();
 
