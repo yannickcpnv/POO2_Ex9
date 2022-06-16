@@ -8,16 +8,16 @@ public class MailValidator : IMailValidator
 
     public MailValidator()
     {
-        _validations = new List<IMailValidator>
-        {
-            new MailBadWordsMailValidator(),
-            new MailWhiteListRecipientsMailValidator(),
-            new MailAttachmentsExtensionMailValidator()
-        };
+        _validations = new List<IMailValidator>();
     }
 
     public bool IsValid(MailMessage mail)
     {
-        return _validations.All(validation => validation.IsValid(mail));
+        return _validations.All(v => v.IsValid(mail));
+    }
+
+    public void Add(IMailValidator validator)
+    {
+        _validations.Add(validator);
     }
 }

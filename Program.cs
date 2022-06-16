@@ -11,9 +11,15 @@ internal static class Program
         var exitEvent = new ManualResetEvent(false);
         WaitForExitInput(exitEvent);
 
-        var smtpSever = new SmtpServer(3325, new MailValidator());
-        smtpSever.Subscribe(new MailStatObserver());
+        var mailValidator = new MailValidator();
+        string[] wantedValidators = { "BadWords", "WhiteListRecipients", "AttachmentsExtension" };
+        wantedValidators.Select(MailValidatorFactory.Create).ToList()
+                        .ForEach(mailValidator.Add);
+
+        var smtpSever = new SmtpServer(3325, mailValidator);
+        smtpSever.Subscribe(new MailStatObserver("data/stats.txt"));
         smtpSever.Subscribe(new MailLogObserver());
+
         smtpSever.Start();
         smtpSever.WaitReceivingMessages();
 
